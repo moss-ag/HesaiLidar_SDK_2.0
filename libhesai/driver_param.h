@@ -83,6 +83,9 @@ typedef struct DecoderParam
   // enable the udp packet loss detection tool
   // it forbiddens parser udp packet while trun on this tool
   bool enable_packet_loss_tool = false;
+  // Enable distance correction to account for offset between
+  // sensor origin and laser emitter/receiver
+  bool enable_distance_correction = false;
 } DecoderParam;
 
 ///< The LiDAR input parameter

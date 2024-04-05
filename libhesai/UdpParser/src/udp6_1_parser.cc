@@ -40,7 +40,7 @@ template<typename T_Point>
 Udp6_1Parser<T_Point>::Udp6_1Parser() {
   this->motor_speed_ = 0;
   this->return_mode_ = 0;
-  block_num_ = 6; 
+  block_num_ = 8; 
 }
 template<typename T_Point>
 Udp6_1Parser<T_Point>::~Udp6_1Parser() { printf("release general parser\n"); }
@@ -51,6 +51,20 @@ int Udp6_1Parser<T_Point>::ComputeXYZI(LidarDecodedFrame<T_Point> &frame, LidarD
     T_Point point;
     int elevation = 0;
     int azimuth = 0;
+
+    switch (block_num_) {
+      case 6: // XTM
+          distance_correction_b_ = 0.0130;
+          distance_correction_h_ = 0.0305;
+          break;
+      case 8: // XT
+          distance_correction_b_ = 0.0130;
+          distance_correction_h_ = 0.0315;
+          break;
+      default:
+          std::cout << __func__ << "default: never occur" << block_num_ << std::endl;
+          break;
+    }
 
     for (int i = 0; i < packet.laser_num; i++) {
       int point_index = packet.packet_index * packet.points_num + blockid * packet.laser_num + i;
@@ -134,6 +148,7 @@ int Udp6_1Parser<T_Point>::DecodePacket(LidarDecodedPacket<T_Point> &output, con
   float minAzimuth = 0;
   float maxAzimuth = 0;
   output.block_num = pHeader->GetBlockNum();
+  block_num_ = output.block_num;
   output.laser_num = pHeader->GetLaserNum();
   
   const HsLidarXTV1BodyAzimuth *pAzimuth =
@@ -191,30 +206,19 @@ void Udp6_1Parser<T_Point>::GetDistanceCorrection(int const& aziOrigin,
                                                       float& x,
                                                       float& y,
                                                       float& z
-                                                      ) {
-    int aziCal = (aziOrigin + aziDelt) % CIRCLE;                                                    
+                                                      ) const {
+    const int aziCal = (aziOrigin + aziDelt) % CIRCLE;
+
     if(distance <= 0.1) {
-      float xyDistance = distance * this->cos_all_angle_[(elevation)];
-      float x = xyDistance * this->sin_all_angle_[(aziCal)];
-      float y = xyDistance * this->cos_all_angle_[(aziCal)];
-      float z = distance * this->sin_all_angle_[(elevation)];
+      const float xyDistance = distance * this->cos_all_angle_[(elevation)];
+      x = xyDistance * this->sin_all_angle_[(aziCal)];
+      y = xyDistance * this->cos_all_angle_[(aziCal)];
+      z = distance * this->sin_all_angle_[(elevation)];
       return;
     }
-    switch (block_num_) {
-        case 6: // XTM
-            distance_correction_b_ = 0.0130;
-            distance_correction_h_ = 0.0305;
-            break;
-        case 8: // XT
-            distance_correction_b_ = 0.0130;
-            distance_correction_h_ = 0.0315;
-            break;
-        default:
-            std::cout << __func__ << "default: never occur" << block_num_ << std::endl;
-            break;
-    }
-    int aziCorrection = aziDelt % CIRCLE;
-    float calDistance = distance
+
+    const int aziCorrection = aziDelt % CIRCLE;
+    const float calDistance = distance
                   - this->cos_all_angle_[elevation] * (distance_correction_h_ * this->cos_all_angle_[aziCorrection] - distance_correction_b_ * this->sin_all_angle_[aziCorrection]);
     x = calDistance * this->cos_all_angle_[elevation] * this->sin_all_angle_[aziCal]
                   - distance_correction_b_ * this->cos_all_angle_[aziOrigin] + distance_correction_h_ * this->sin_all_angle_[aziOrigin];

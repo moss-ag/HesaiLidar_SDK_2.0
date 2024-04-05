@@ -181,11 +181,11 @@ int Lidar<T_Point>::Init(const DriverParam& param) {
     default:
       break;
     }
-    LoadFiretimesFile(param.input_param.firetimes_path);
     /********************************************************************************/
     udp_parser_->SetPcapPlay(param.decoder_param.pcap_play_synchronization, param.input_param.source_type);
     udp_parser_->SetFrameAzimuth(param.decoder_param.frame_start_azimuth);
     udp_parser_->GetParser()->EnablePacketLossTool(param.decoder_param.enable_packet_loss_tool);
+    udp_parser_->GetParser()->SetEnableDistanceCorrection(param.decoder_param.enable_distance_correction);
     res = 0;
     return res;
 }
