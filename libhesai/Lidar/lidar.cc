@@ -164,12 +164,20 @@ int Lidar<T_Point>::Init(const DriverParam& param) {
         std::cout << "---Failed to obtain correction file from lidar!---" << std::endl;
         LoadCorrectionFile(param.input_param.correction_file_path);
       }
+
+      if (LoadFiretimesForUdpParser() == -1) {
+        std::cout << "---Failed to obtain firetimes file from lidar!---" << std::endl;
+        LoadFiretimesFile(param.input_param.firetimes_path);
+      }
+      
       break;
     case 2:
       LoadCorrectionFile(param.input_param.correction_file_path);
+      LoadFiretimesFile(param.input_param.firetimes_path);
       break;
     case 3:
       LoadCorrectionFile(param.input_param.correction_file_path);
+      LoadFiretimesFile(param.input_param.firetimes_path);
     default:
       break;
     }
@@ -191,6 +199,23 @@ int Lidar<T_Point>::LoadCorrectionForUdpParser() {
   }
   if (udp_parser_) {
     return udp_parser_->LoadCorrectionString(
+        (char *)sData.data());
+  } else {
+    std::cout << __func__ << "udp_parser_ nullptr\n";
+    return -1;
+  }
+  return 0;
+}
+
+template <typename T_Point>
+int Lidar<T_Point>::LoadFiretimesForUdpParser() {
+  u8Array_t sData;
+  if (ptc_client_->GetFiretimesInfo(sData) != 0) {
+    std::cout << __func__ << "get firetimes info fail\n";
+    return -1;
+  }
+  if (udp_parser_) {
+    return udp_parser_->LoadFiretimesString(
         (char *)sData.data());
   } else {
     std::cout << __func__ << "udp_parser_ nullptr\n";

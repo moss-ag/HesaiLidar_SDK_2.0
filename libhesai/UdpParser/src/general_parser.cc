@@ -167,29 +167,59 @@ int GeneralParser<T_Point>::LoadCorrectionString(char *correction_content) {
   this->get_correction_file_ = true;
   return 0;
 }
-
 template <typename T_Point>
 void GeneralParser<T_Point>::LoadFiretimesFile(std::string firetimes_path) {
-  std::ifstream inFile(firetimes_path, std::ios::in);
-  if (inFile.is_open()) {
-    std::string lineStr;
-    //skip first line
-    std::getline(inFile, lineStr); 
-    while (getline(inFile, lineStr)) {
-      std::stringstream ss(lineStr);
-      std::string index, deltTime;
-      std::getline(ss, index, ',');
-      std::getline(ss, deltTime, ',');
+  int ret = 0;
+  std::ifstream fin(firetimes_path);
+  if (fin.is_open()) {
+    int length = 0;
+    fin.seekg(0, std::ios::end);
+    length = fin.tellg();
+    fin.seekg(0, std::ios::beg);
+    char *buffer = new char[length];
+    fin.read(buffer, length);
+    fin.close();
+    ret = LoadFiretimesString(buffer);
+    if (ret != 0) {
+      std::cout << "Parse local firetime file Error\n";
+    } else {
+      std::cout << "Parser firetime file success!" << std::endl;
     }
     this->get_firetime_file_ = true;
-    std::cout << "Open firetime file success!" << std::endl;
-    inFile.close();
+    SetEnableFireTimeCorrection(true);
     return;
   } else {
     std::cout << "Open firetime file failed" << std::endl;
     this->get_firetime_file_ = false;
+    SetEnableFireTimeCorrection(false);
     return;
   }
+}
+template <typename T_Point>
+int GeneralParser<T_Point>::LoadFiretimesString(char *correction_string) {
+  std::string firetimes_content_str = correction_string;
+  std::istringstream ifs(firetimes_content_str);
+  std::string line;
+
+  // skip first line "Channel,fire time(us)" or "eeff"
+  std::getline(ifs, line);  
+  std::vector<std::string> vfirstLine;
+  boost::split(vfirstLine, line, boost::is_any_of(","));
+  if (vfirstLine[0] == "EEFF" || vfirstLine[0] == "eeff") {
+    // skip second line
+    std::getline(ifs, line);  
+  }
+
+  for (std::string line; std::getline(ifs, line);) {
+    std::vector<std::string> ChannelLine;
+    boost::split(ChannelLine, line, boost::is_any_of(","));
+    int laserId = atoi(ChannelLine[0].c_str()) - 1;
+    if (laserId >= 0) {
+      firetime_correction_[laserId] = std::stof(ChannelLine[1].c_str());
+    }
+  }
+
+  return 0;
 }
 
 template <typename T_Point>
@@ -204,11 +234,6 @@ void GeneralParser<T_Point>::SetEnableFireTimeCorrection(bool enable) {
 template <typename T_Point>
 void GeneralParser<T_Point>::SetEnableDistanceCorrection(bool enable) {
   this->enable_distance_correction_ = enable;
-}
-template <typename T_Point>
-int GeneralParser<T_Point>::LoadFiretimesString(char *correction_string) {
-  printf("load firetimes string\n");
-  return 0;
 }
 
 template <typename T_Point>

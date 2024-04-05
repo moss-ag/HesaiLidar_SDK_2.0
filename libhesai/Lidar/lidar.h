@@ -113,6 +113,8 @@ public:
   int SaveCorrectionFile(std::string correction_save_path);
   // get lidar correction file from ptc,and pass to udp parser
   int LoadCorrectionForUdpParser();
+  // get lidar firetime correction file from ptc,and pass to udp parser
+  int LoadFiretimesForUdpParser();
   // get lidar correction file from local file,and pass to udp parser 
   void LoadCorrectionFile(std::string correction_path); 
   int LoadCorrectionString(char *correction_string);

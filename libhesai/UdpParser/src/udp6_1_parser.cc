@@ -155,9 +155,9 @@ int Udp6_1Parser<T_Point>::DecodePacket(LidarDecodedPacket<T_Point> &output, con
     // point to next block fine azimuth addr
     auto elevation = 0;
     for (int i = 0; i < pHeader->GetLaserNum(); i++) { 
-      if (this->get_firetime_file_) {
+      if (this->enable_firetime_correction_ && this->get_firetime_file_) {
         output.azimuth[index] = u16Azimuth + this->GetFiretimesCorrection(i, this->spin_speed_) * kResolutionInt;
-      }else {
+      } else {
         output.azimuth[index] = u16Azimuth;
       }
       output.distances[index] = pChnUnit->GetDistance() ;

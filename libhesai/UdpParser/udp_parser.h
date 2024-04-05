@@ -79,6 +79,7 @@ class UdpParser {
 
   // get lidar firetime correction file from local file,and pass to udp parser
   void LoadFiretimesFile(std::string firetimes_path);
+  int LoadFiretimesString(char *firetimes_string);
   void EnableUpdateMonitorInfo();
   void DisableUpdateMonitorInfo();
   uint16_t *GetMonitorInfo1();

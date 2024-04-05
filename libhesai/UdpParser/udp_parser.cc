@@ -103,6 +103,14 @@ void UdpParser<T_Point>::LoadFiretimesFile(std::string firetimes_path) {
 }
 
 template<typename T_Point>
+int UdpParser<T_Point>::LoadFiretimesString(char *correction_string) {
+  if (parser_ != nullptr) {
+    return parser_->LoadFiretimesString(correction_string);
+  }
+  return -1;
+}
+
+template<typename T_Point>
 void UdpParser<T_Point>::CreatGeneralParser(uint8_t major, uint8_t minor) {
   if (parser_ != nullptr) {
     return;
