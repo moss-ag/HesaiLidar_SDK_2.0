@@ -207,7 +207,7 @@ void Udp6_1Parser<T_Point>::GetDistanceCorrection(int const& aziOrigin,
                                                       float& y,
                                                       float& z
                                                       ) const {
-    const int aziCal = (aziOrigin + aziDelt) % CIRCLE;
+    const int aziCal = (CIRCLE + (aziOrigin + aziDelt)) % CIRCLE;
 
     if(distance <= 0.1) {
       const float xyDistance = distance * this->cos_all_angle_[(elevation)];
