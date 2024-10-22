@@ -88,7 +88,7 @@ class PtcClient {
   bool GetValFromOutput(uint8_t cmd, uint8_t retcode, const u8Array_t &payload, int start_pos, int length, u8Array_t &res);
 
   u8Array_t GetCorrectionInfo();
-  int GetLidarStatus();
+  int GetLidarStatus(LidarStatus &lidar_status);
   int GetPTPDiagnostics (u8Array_t &dataOut, uint8_t query_type);
   int GetPTPLockOffset(u8Array_t &dataOut);
   int GetCorrectionInfo(u8Array_t &dataOut);

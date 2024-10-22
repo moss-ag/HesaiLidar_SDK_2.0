@@ -43,6 +43,7 @@ private:
   std::function<void(const u8Array_t&)> correction_cb_;
   std::function<void(const uint32_t &, const uint32_t &)> pkt_loss_cb_;
   std::function<void(const uint8_t&, const u8Array_t&)> ptp_cb_;
+  std::function<void(const LidarStatus&)> lidar_status_cb_;
   std::function<void(const FaultMessageInfo&)> fault_message_cb_;
   bool is_thread_runing_;
   bool packet_loss_tool_;
@@ -237,6 +238,19 @@ public:
               ptp_cb_(ptp_lock_offset.front(), ptp_status);
             }
           }
+          if (lidar_status_cb_ && lidar_ptr_->frame_.frame_index % 100 == 1)
+          {
+            LidarStatus status;
+            int ret_status = lidar_ptr_->ptc_client_->GetLidarStatus(status);
+            if (ret_status != 0)
+            {
+              printf("Error: GetLidarStatus failed\n");
+            }
+            else
+            {
+              lidar_status_cb_(status);
+            }
+          }
           if (correction_cb_ && lidar_ptr_->frame_.frame_index % 1000 == 1)
           {
             correction_cb_(lidar_ptr_->correction_string_);
@@ -299,6 +313,11 @@ public:
   void RegRecvCallback(const std::function<void (const uint8_t&, const u8Array_t&)>& callback) {
     ptp_cb_ = callback;
   }
+
+  void RegRecvCallback(const std::function<void (const LidarStatus&)>& callback) {
+    lidar_status_cb_ = callback;
+  }
+
   void RegRecvCallback(const std::function<void (const FaultMessageInfo&)>& callback) {
     fault_message_cb_ = callback;
   }

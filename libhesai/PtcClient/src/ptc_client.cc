@@ -330,14 +330,14 @@ int PtcClient::GetPTPLockOffset(u8Array_t &dataOut)
   }
 }
 
-int PtcClient::GetLidarStatus() {
+int PtcClient::GetLidarStatus(LidarStatus &lidar_status) {
   u8Array_t dataIn, dataOut;
   int ret = -1;
   ret = this->QueryCommand(dataIn, dataOut, 
                            kPTCGetLidarStatus);
   if (ret == 0 && !dataOut.empty()) {
     // according XT32M1X_TCP_API.pdf
-    uint32_t systemp_uptime;
+    uint32_t system_uptime;
     uint16_t motor_speed;
     uint32_t temperature[8];
     uint8_t gps_pps_lock;
@@ -347,7 +347,7 @@ int PtcClient::GetLidarStatus() {
     uint8_t ptp_status;
 
     size_t offset = 0;
-    systemp_uptime = extractField<uint32_t>(dataOut, offset);
+    system_uptime = extractField<uint32_t>(dataOut, offset);
     motor_speed = extractField<uint16_t>(dataOut, offset);
     for (int i = 0; i < 8; i ++ ) {
       temperature[i] = extractField<uint32_t>(dataOut, offset);
@@ -357,23 +357,42 @@ int PtcClient::GetLidarStatus() {
     startup_times = extractField<uint32_t>(dataOut, offset);
     total_operation_time = extractField<uint32_t>(dataOut, offset);
     ptp_status = extractField<uint8_t>(dataOut, offset);
-    printf("System uptime: %u second, Real-time motor speed: %u RPM\n"
-           "----------Temperature(0.01 Celsius)-----------\n"
-           "Bottom circuit board T1: %u\n"
-           "Bottom circuit board T2: %u\n"
-           "Laser emitting board RT_L1: %u\n"
-           "Laser emitting board RT_L2: %u\n"
-           "Laser Receiving board RT_R: %d\n"
-           "Laser Receiving board RT2: %d\n"
-           "Top circuit RT3: %u\n"
-           "Top circuit RT4: %u\n"
-           "GPS PPS status: %u, GPS NMEA status: %u\n"
-           "System start-up times: %u, Total time in operation: %u\n"
-           "PTP status: %u\n"
-    , systemp_uptime, motor_speed, temperature[0], temperature[1],temperature[2], temperature[3],
-    temperature[4], temperature[5], temperature[6], temperature[7], gps_pps_lock, gps_gprmc_status,
-    startup_times, total_operation_time, ptp_status);
-    printf("Lidar Status Size: %zu\n", offset);
+
+    lidar_status.system_uptime = system_uptime;
+    lidar_status.motor_speed = motor_speed;
+    std::copy(temperature, temperature + 8, lidar_status.temperature);
+    lidar_status.gps_pps_lock = gps_pps_lock;
+    lidar_status.gps_gprmc_status = gps_gprmc_status;
+    lidar_status.startup_times = startup_times;
+    lidar_status.total_operation_time = total_operation_time;
+    lidar_status.ptp_status = ptp_status;
+
+    u8Array_t ptp_offset_data;
+    int ret = GetPTPLockOffset(ptp_offset_data);
+    if (ret == 0 && !ptp_offset_data.empty()) {
+      lidar_status.ptp_offset = extractField<uint8_t>(ptp_offset_data, offset);
+    } else {
+      lidar_status.ptp_offset = 0;
+    }
+
+    // printf("System uptime: %u second, Real-time motor speed: %u RPM\n"
+    //        "----------Temperature(0.01 Celsius)-----------\n"
+    //        "Bottom circuit board T1: %u\n"
+    //        "Bottom circuit board T2: %u\n"
+    //        "Laser emitting board RT_L1: %u\n"
+    //        "Laser emitting board RT_L2: %u\n"
+    //        "Laser Receiving board RT_R: %d\n"
+    //        "Laser Receiving board RT2: %d\n"
+    //        "Top circuit RT3: %u\n"
+    //        "Top circuit RT4: %u\n"
+    //        "GPS PPS status: %u, GPS NMEA status: %u\n"
+    //        "System start-up times: %u, Total time in operation: %u\n"
+    //        "PTP status: %u\n"
+    // , system_uptime, motor_speed, temperature[0], temperature[1], temperature[2],
+    // temperature[3], temperature[4], temperature[5], temperature[6], temperature[7],
+    // gps_pps_lock, gps_gprmc_status, startup_times, total_operation_time, ptp_status);
+    // printf("Lidar Status Size: %zu\n", offset);
+
     return 0;
   } else {
     return -1;

@@ -258,6 +258,18 @@ struct UdpPacket {
   }
 };
 
+struct LidarStatus {
+  uint32_t system_uptime;
+  uint16_t motor_speed;
+  uint32_t temperature[8];
+  uint8_t gps_pps_lock;
+  uint8_t gps_gprmc_status;
+  uint32_t startup_times;
+  uint32_t total_operation_time;
+  uint8_t ptp_status;
+  uint8_t ptp_offset;
+};
+
 typedef std::vector<uint8_t> u8Array_t;
 typedef std::vector<uint16_t> u16Array_t;
 typedef std::vector<uint32_t> u32Array_t;
