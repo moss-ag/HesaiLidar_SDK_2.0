@@ -368,11 +368,16 @@ int PtcClient::GetLidarStatus(LidarStatus &lidar_status) {
     lidar_status.ptp_status = ptp_status;
 
     u8Array_t ptp_offset_data;
-    int ret = GetPTPLockOffset(ptp_offset_data);
+    int ret = GetPTPDiagnostics(ptp_offset_data, 1);
     if (ret == 0 && !ptp_offset_data.empty()) {
-      lidar_status.ptp_offset = extractField<uint8_t>(ptp_offset_data, offset);
+      size_t offset = 0;
+      lidar_status.ptp_offset = extractField<uint64_t>(ptp_offset_data, offset);
+      lidar_status.ptp_state = extractField<uint32_t>(ptp_offset_data, offset);
+      lidar_status.ptp_handshake_elapsed_time = extractField<uint32_t>(ptp_offset_data, offset);
     } else {
       lidar_status.ptp_offset = 0;
+      lidar_status.ptp_state = 0;
+      lidar_status.ptp_handshake_elapsed_time = 0;
     }
 
     // printf("System uptime: %u second, Real-time motor speed: %u RPM\n"
