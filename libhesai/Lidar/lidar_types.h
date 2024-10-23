@@ -267,7 +267,7 @@ struct LidarStatus {
   uint32_t startup_times;
   uint32_t total_operation_time;
   uint8_t ptp_status;
-  uint64_t ptp_offset;
+  int64_t ptp_offset;
   uint32_t ptp_state;
   uint32_t ptp_handshake_elapsed_time;
 };

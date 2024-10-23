@@ -371,7 +371,7 @@ int PtcClient::GetLidarStatus(LidarStatus &lidar_status) {
     int ret = GetPTPDiagnostics(ptp_offset_data, 1);
     if (ret == 0 && !ptp_offset_data.empty()) {
       size_t offset = 0;
-      lidar_status.ptp_offset = extractField<uint64_t>(ptp_offset_data, offset);
+      lidar_status.ptp_offset = extractField<int64_t>(ptp_offset_data, offset);
       lidar_status.ptp_state = extractField<uint32_t>(ptp_offset_data, offset);
       lidar_status.ptp_handshake_elapsed_time = extractField<uint32_t>(ptp_offset_data, offset);
     } else {
