@@ -200,6 +200,9 @@ int Lidar<T_Point>::Init(const DriverParam& param) {
         if (LoadCorrectionForUdpParser() == -1) {
           LogWarning("---Failed to obtain correction file from lidar!---");
           LoadCorrectionFile(param.input_param.correction_file_path);
+        } else {
+          LogInfo("---Successfully obtained correction file from lidar!---");
+          SaveCorrectionFile(param.input_param.correction_file_path);
         }
       }
       break;
